@@ -49,7 +49,7 @@ public class Tests {
         Assert.assertTrue(true);
     }
     
-    @Test
+    @Test(retryAnalyzer=RetryAnalyzer.class)
     public void test2() {
         Assert.assertTrue(false);
     }
