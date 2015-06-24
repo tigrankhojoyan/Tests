@@ -5,9 +5,15 @@
  */
 package testng.tests;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -29,12 +35,12 @@ public class MailSender {
 
     /**
      * Sets necessary system properties to send email.
-     * 
+     *
      * @param properties
      * @param host
      * @param port
      * @param userName
-     * @param password 
+     * @param password
      */
     public static void setSMTPProperties(Properties properties, String host, String port,
             String userName, String password) {
@@ -48,11 +54,11 @@ public class MailSender {
 
     /**
      * Attaches the specified file to email.
-     * 
+     *
      * @param messageBodyPart
      * @param attachFiles
      * @return
-     * @throws MessagingException 
+     * @throws MessagingException
      */
     public static Multipart addAttachmentToMail(MimeBodyPart messageBodyPart, String[] attachFiles) throws MessagingException {
         Multipart multipart = new MimeMultipart();
@@ -74,10 +80,10 @@ public class MailSender {
         }
         return multipart;
     }
-    
+
     /**
      * Sends email with the specified attached file.
-     * 
+     *
      * @param host
      * @param port
      * @param userName
@@ -88,9 +94,8 @@ public class MailSender {
      * @param attachFiles
      * @throws AddressException
      * @throws MessagingException
-     * @throws IOException 
+     * @throws IOException
      */
-
     public static void sendEmailWithAttachments(String host, String port,
             final String userName, final String password, String[] toAddress,
             String subject, String message, String[] attachFiles)
@@ -108,9 +113,9 @@ public class MailSender {
         // creates a new e-mail message
         Message msg = new MimeMessage(session);
         msg.setFrom(new InternetAddress(userName));
-        
+
         InternetAddress[] toAddresses = new InternetAddress[toAddress.length];
-        for(int i = 0; i < toAddress.length; i++) {
+        for (int i = 0; i < toAddress.length; i++) {
             toAddresses[i] = new InternetAddress(toAddress[i]);
         }
         //InternetAddress[] toAddresses = {new InternetAddress(toAddress), new InternetAddress("lusine_p@instigatemobile.com")};
@@ -119,11 +124,38 @@ public class MailSender {
         msg.setSentDate(new Date());
         // creates message part
         MimeBodyPart messageBodyPart = new MimeBodyPart();
-        messageBodyPart.setContent(message, "text/html");
+        messageBodyPart.setContent(message, "text/plain");
         // sets the multi-part as e-mail's content
         msg.setContent(addAttachmentToMail(messageBodyPart, attachFiles));
         // sends the e-mail
         Transport.send(msg);
+    }
+
+    /**
+     *
+     * @param fileName
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static String getAllFileData(String fileName) {
+        byte[] data = null;
+        try {
+            File file = new File(fileName);
+            FileInputStream fis = new FileInputStream(file);
+            data = new byte[(int) file.length()];
+            fis.read(data);
+            fis.close();
+        } catch (Exception e) {
+            System.err.println("Failed to get the content of the '" + fileName + "' file.");
+        }
+        String fileContent = null;
+        try {
+            fileContent = new String(data, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(MailSender.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return fileContent;
     }
 
     public static void main(String[] args) {
@@ -136,11 +168,14 @@ public class MailSender {
         // message info
         String[] mailTo = {"tigrankhojoyan@mail.ru", "lusine_p@instigatemobile.com"};
         String subject = "Horizon web vidoe test results";
-        String message = "The test results of the Horizon web video player";
+        String message = "The test results of the Horizon web video player \n"
+                + getAllFileData("src/main/resources/testsShortStatus.txt")
+                + "\n See more details in attached testFile.txt file.";
 
         // attachments
         String[] attachFiles = new String[1];
         attachFiles[0] = "src/main/resources/testFile.txt";
+        //attachFiles[1] = "src/main/resources/testsShortStatus.txt";
 
         try {
             sendEmailWithAttachments(host, port, mailFrom, password, mailTo,

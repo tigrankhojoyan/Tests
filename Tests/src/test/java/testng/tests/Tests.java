@@ -5,8 +5,11 @@
  */
 package testng.tests;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import junit.framework.Assert;
 import static org.testng.Assert.*;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -19,6 +22,24 @@ import org.testng.annotations.Test;
  */
 public class Tests {
     
+    public String fileName = "src/main/resources/testsShortStatus.txt";
+    
+    /**
+     * Writes the given data into the file. If the file does not exist, it will be created.
+     * @param testCaseStatus
+     * @param testCaseName
+     * @param fileName 
+     */
+  public void writeDataIntoFile(String testCaseStatus, String testCaseName, String fileName) {
+    try {
+      FileWriter fw = new FileWriter(fileName, true);
+      fw.write(testCaseName + " - " + testCaseStatus + "\n");
+      fw.close();
+    } catch (IOException ioe) {
+      System.err.println("IOException: " + ioe.getMessage());
+    }
+  }
+
     public Tests() {
     }
 
@@ -27,7 +48,6 @@ public class Tests {
     //
     // @Test
     // public void hello() {}
-
     @BeforeClass
     public static void setUpClass() throws Exception {
     }
@@ -41,15 +61,21 @@ public class Tests {
     }
 
     @AfterMethod
-    public void tearDownMethod() throws Exception {
+    public void tearDown(ITestResult result) {
+        String testCaseStatus = "Pass";
+        if (result.getStatus() == ITestResult.FAILURE) {
+            //your screenshooting code goes here
+            testCaseStatus = "Fail";
+        }
+        writeDataIntoFile(testCaseStatus, result.getMethod().getMethodName(), fileName);
     }
-    
+
     @Test
     public void test1() {
         Assert.assertTrue(true);
     }
-    
-    @Test(retryAnalyzer=RetryAnalyzer.class)
+
+    @Test(retryAnalyzer = RetryAnalyzer.class)
     public void test2() {
         Assert.assertTrue(false);
     }
