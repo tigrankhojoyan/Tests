@@ -92,7 +92,7 @@ public class MailSender {
      */
 
     public static void sendEmailWithAttachments(String host, String port,
-            final String userName, final String password, String toAddress,
+            final String userName, final String password, String[] toAddress,
             String subject, String message, String[] attachFiles)
             throws AddressException, MessagingException, IOException {
         // sets SMTP server properties
@@ -108,7 +108,12 @@ public class MailSender {
         // creates a new e-mail message
         Message msg = new MimeMessage(session);
         msg.setFrom(new InternetAddress(userName));
-        InternetAddress[] toAddresses = {new InternetAddress(toAddress)};
+        
+        InternetAddress[] toAddresses = new InternetAddress[toAddress.length];
+        for(int i = 0; i < toAddress.length; i++) {
+            toAddresses[i] = new InternetAddress(toAddress[i]);
+        }
+        //InternetAddress[] toAddresses = {new InternetAddress(toAddress), new InternetAddress("lusine_p@instigatemobile.com")};
         msg.setRecipients(Message.RecipientType.TO, toAddresses);
         msg.setSubject(subject);
         msg.setSentDate(new Date());
@@ -129,7 +134,7 @@ public class MailSender {
         String password = "Disney5411";
 
         // message info
-        String mailTo = "tigrankhojoyan@mail.ru";
+        String[] mailTo = {"tigrankhojoyan@mail.ru", "lusine_p@instigatemobile.com"};
         String subject = "Horizon web vidoe test results";
         String message = "The test results of the Horizon web video player";
 
